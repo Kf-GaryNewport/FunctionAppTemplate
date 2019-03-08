@@ -9,7 +9,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using HeyRed.Mime;
-
+using Newtonsoft.Json;
+using System.Text;
 
 namespace FunctionAppTemplate
 {
@@ -23,7 +24,7 @@ namespace FunctionAppTemplate
         [FunctionName("WebSite")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequestMessage req, TraceWriter log)
         {
-            log.Info("C# HTTP trigger function processed a request.");
+            log.Info("WebSite processed a request.");
 
             var filePath = GetFilePath(req, log);
 
@@ -39,6 +40,19 @@ namespace FunctionAppTemplate
             {
                 return new HttpResponseMessage(HttpStatusCode.NotFound);
             }
+        }
+
+        [FunctionName("Ping")]
+        public static async Task<HttpResponseMessage> Ping([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequestMessage req, TraceWriter log)
+        {
+            log.Info("Ping processed a request.");
+
+            var myObj = new { timestamp = DateTime.UtcNow.ToString() };
+            var jsonToReturn = JsonConvert.SerializeObject(myObj);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(jsonToReturn, Encoding.UTF8, "application/json")
+            };
         }
 
         private static string GetMimeType( string filePath)
